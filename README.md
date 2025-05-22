@@ -1,4 +1,5 @@
 **Run app**
-sh'''
+
+```sh
 node app.js
-'''
+```
