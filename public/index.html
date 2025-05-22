@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Đề Xuất Món Ăn</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f9f9f9;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 8px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 9px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #results {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      min-height: 50px;
+    }
+    #loading {
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h2>Đề Xuất Món Ăn</h2>
+  <label for="ingredients">Nhập nguyên liệu (phân cách bằng dấu phẩy):</label><br/>
+  <input type="text" id="ingredients" placeholder="Ví dụ: cà chua, thịt bò, tỏi" />
+  <button onclick="getSuggestions()">Đề Xuất</button>
+
+  <div id="results"></div>
+
+  <script>
+  async function getSuggestions() {
+    const resultsDiv = document.getElementById('results');
+    const input = document.getElementById('ingredients').value.trim();
+
+    // Validate input
+    if (!input) {
+      resultsDiv.innerHTML = "<span style='color:red;'>Vui lòng nhập nguyên liệu.</span>";
+      return;
+    }
+
+    // Convert input string to array of trimmed, non-empty ingredients
+    const ingredients = input
+      .split(',')
+      .map(i => i.trim())
+      .filter(i => i.length > 0);
+
+    if (ingredients.length === 0) {
+      resultsDiv.innerHTML = "<span style='color:red;'>Vui lòng nhập nguyên liệu hợp lệ.</span>";
+      return;
+    }
+
+    resultsDiv.innerHTML = "<span id='loading'>Đang tìm món ăn phù hợp...</span>";
+
+    try {
+      const res = await fetch('/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredients })
+      });
+
+      if (!res.ok) {
+        resultsDiv.innerHTML = "<span style='color:red;'>Có lỗi xảy ra khi gọi API.</span>";
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data.suggestions || data.suggestions.length === 0) {
+        resultsDiv.innerHTML = "Không tìm thấy món ăn phù hợp với nguyên liệu đã nhập.";
+      } else {
+        // Escape HTML to avoid injection (optional)
+        const safeSuggestions = data.suggestions.map(s => 
+          s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        );
+
+        resultsDiv.innerHTML = safeSuggestions.join('<br>');
+      }
+
+    } catch (error) {
+      resultsDiv.innerHTML = `<span style='color:red;'>Lỗi kết nối: ${error.message}</span>`;
+    }
+  }
+</script>
+
+</body>
+</html>
