@@ -5,8 +5,7 @@ swipl -s recipes.pl -g "findall(R, suggest_recipe(['hanh','trung'], R), List), w
 ```
 
 **Run app**
-direction to file food-suggestion-app, run app
+
 ```sh
-cd food-suggestion-app
 node app.js
 ```
